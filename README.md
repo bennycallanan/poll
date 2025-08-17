@@ -6,7 +6,7 @@ A feature-rich Minecraft poll plugin with GUI voting, SQLite storage, and staff 
 
 ### Requirements
 - **Minecraft**: 1.21+ (Paper/Spigot)
-- **Java**: 22 or higher
+- **Java**: 17 or higher
 - **Dependencies**: cLibraries (included in shaded JAR)
 
 ### Building
