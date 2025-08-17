@@ -33,6 +33,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
     
     steps:
       - uses: actions/checkout@v4
@@ -44,15 +46,12 @@ jobs:
           path: target/
 
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.run_number }}
-          release_name: Release v${{ github.run_number }}
-          body: |
-            ## Poll Plugin v${{ github.run_number }}
+        run: |
+          gh release create v${{ github.run_number }} \
+            --title "Release v${{ github.run_number }}" \
+            --notes "## Poll Plugin v${{ github.run_number }}
             
             ### Changes
             - Automated release from commit ${{ github.sha }}
@@ -60,18 +59,7 @@ jobs:
             - Includes all dependencies (shaded JAR)
             
             ### Installation
-            1. Download `poll.jar`
-            2. Place in your `plugins` folder
-            3. Restart your server
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: target/poll.jar
-          asset_name: poll.jar
-          asset_content_type: application/java-archive
+            1. Download \`poll.jar\`
+            2. Place in your \`plugins\` folder
+            3. Restart your server" \
+            target/poll.jar
