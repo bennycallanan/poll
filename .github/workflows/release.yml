@@ -49,9 +49,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create v${{ github.run_number }} \
-            --title "Release v${{ github.run_number }}" \
-            --notes "## Poll Plugin v${{ github.run_number }}
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          gh release create $SHORT_SHA \
+            --title "Release $SHORT_SHA" \
+            --notes "## Poll Plugin Release
             
             ### Changes
             - Automated release from commit ${{ github.sha }}
