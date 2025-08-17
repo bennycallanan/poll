@@ -38,6 +38,10 @@ public class PollCreationMenu extends Menu {
         options.add(option);
     }
     
+    public List<String> getOptions() {
+        return options;
+    }
+    
     @Override
     public String getTitle(Player player) {
         return CC.DARK_GRAY + "Create Poll";
@@ -70,24 +74,33 @@ public class PollCreationMenu extends Menu {
         buttons.put(20, new Button() {
             @Override
             public String getName(Player player) {
-                return CC.GREEN + "+ Add Option";
+                return options.size() < 6 ? CC.GREEN + "+ Add Option" : CC.RED + "Maximum 6 options";
             }
 
             @Override
             public List<String> getDescription(Player player) {
                 List<String> lore = new ArrayList<>();
-                lore.add(CC.GRAY + "Click to add a new option");
-                lore.add(CC.GRAY + "You'll be prompted to type the option text");
+                if (options.size() < 6) {
+                    lore.add(CC.GRAY + "Click to add a new option");
+                    lore.add(CC.GRAY + "You'll be prompted to type the option text");
+                } else {
+                    lore.add(CC.GRAY + "Maximum of 6 options reached");
+                    lore.add(CC.GRAY + "Remove an option to add more");
+                }
                 return lore;
             }
 
             @Override
             public Material getMaterial(Player player) {
-                return XMaterial.EMERALD.get();
+                return options.size() < 6 ? XMaterial.EMERALD.get() : XMaterial.RED_WOOL.get();
             }
             
             @Override
             public void clicked(Player player, int slot, ClickType clickType) {
+                if (options.size() >= 6) {
+                    player.sendMessage(CC.RED + "Maximum of 6 options per poll!");
+                    return;
+                }
                 plugin.getListener().registerOptionInput(player, PollCreationMenu.this);
             }
         });
