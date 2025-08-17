@@ -1,0 +1,6 @@
+sqlite_file: polls.db
+
+gui:
+  use_fillerglass: true
+  auto_update: true
+  update_interval: 20

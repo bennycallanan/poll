@@ -1,0 +1,4 @@
+name: poll
+version: dev
+main: com.conaxgames.poll.PollPlugin
+api-version: 1.20
