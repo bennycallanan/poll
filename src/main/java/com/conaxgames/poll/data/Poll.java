@@ -25,8 +25,8 @@ public class Poll {
     private Map<String, Integer> votes;
     private Map<UUID, String> playerVotes;
     
-    public Poll(String question, List<String> options, LocalDateTime expiresAt, String createdBy) {
-        this.id = UUID.randomUUID().toString();
+    public Poll(String id, String question, List<String> options, LocalDateTime expiresAt, String createdBy) {
+        this.id = id;
         this.question = question;
         this.options = options;
         this.createdAt = LocalDateTime.now();

@@ -2,6 +2,7 @@ package com.conaxgames.poll.menus;
 
 import com.conaxgames.libraries.menu.Button;
 import com.conaxgames.libraries.menu.Menu;
+import com.conaxgames.libraries.message.FormatUtil;
 import com.conaxgames.libraries.util.CC;
 import com.conaxgames.libraries.xseries.XMaterial;
 import com.conaxgames.poll.PollPlugin;
@@ -83,12 +84,17 @@ public class PollListMenu extends Menu {
         
         @Override
         public String getName(Player player) {
-            return CC.YELLOW + poll.getQuestion();
+            return CC.YELLOW + "Poll #" + poll.getId();
         }
 
         @Override
         public List<String> getDescription(Player player) {
             List<String> lore = new ArrayList<>();
+            
+            List<String> wrappedQuestion = FormatUtil.wordWrap(CC.YELLOW + poll.getQuestion(), 40);
+            lore.addAll(wrappedQuestion);
+            lore.add("");
+            
             lore.add(CC.GRAY + "Created by: " + CC.WHITE + poll.getCreatedBy());
             lore.add(CC.GRAY + "Expires: " + CC.WHITE + TimeUtil.formatDateTime(poll.getExpiresAt()));
             lore.add(CC.GRAY + "Time remaining: " + CC.WHITE + TimeUtil.getTimeRemaining(poll.getExpiresAt()));

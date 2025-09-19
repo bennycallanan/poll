@@ -2,6 +2,7 @@ package com.conaxgames.poll.menus;
 
 import com.conaxgames.libraries.menu.Button;
 import com.conaxgames.libraries.menu.Menu;
+import com.conaxgames.libraries.message.FormatUtil;
 import com.conaxgames.libraries.util.CC;
 import com.conaxgames.libraries.xseries.XMaterial;
 import com.conaxgames.poll.PollPlugin;
@@ -54,12 +55,17 @@ public class PollCreationMenu extends Menu {
         buttons.put(4, new Button() {
             @Override
             public String getName(Player player) {
-                return CC.YELLOW + "Question: " + question;
+                return CC.YELLOW + "Creating Poll";
             }
 
             @Override
             public List<String> getDescription(Player player) {
                 List<String> lore = new ArrayList<>();
+                
+                List<String> wrappedQuestion = FormatUtil.wordWrap(CC.YELLOW + question, 40);
+                lore.addAll(wrappedQuestion);
+                lore.add("");
+                
                 lore.add(CC.GRAY + "Duration: " + CC.WHITE + TimeUtil.formatDateTime(expiresAt));
                 lore.add(CC.GRAY + "Options: " + CC.WHITE + options.size() + "/6");
                 return lore;
@@ -136,7 +142,8 @@ public class PollCreationMenu extends Menu {
                     return;
                 }
                 
-                Poll poll = new Poll(question, new ArrayList<>(options), expiresAt, creator.getName());
+                String pollId = plugin.getDataManager().getNextPollId();
+                Poll poll = new Poll(pollId, question, new ArrayList<>(options), expiresAt, creator.getName());
                 plugin.getDataManager().savePoll(poll);
                 
                 player.sendMessage(CC.GREEN + "Poll created successfully!");
