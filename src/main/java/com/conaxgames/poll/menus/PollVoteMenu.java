@@ -104,9 +104,9 @@ public class PollVoteMenu extends Menu {
         @Override
         public String getName(Player player) {
             if (poll.hasVoted(player.getUniqueId()) && poll.getPlayerVote(player.getUniqueId()).equals(option)) {
-                return CC.GREEN + "✓ Answer #" + optionIndex;
+                return CC.GREEN + "✓ Answer #" + optionIndex + ": " + option;
             }
-            return CC.WHITE + "Answer #" + optionIndex;
+            return CC.WHITE + "Answer #" + optionIndex + ": " + option;
         }
 
         @Override
