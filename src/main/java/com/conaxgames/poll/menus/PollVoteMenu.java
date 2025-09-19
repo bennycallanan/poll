@@ -32,7 +32,7 @@ public class PollVoteMenu extends Menu {
 
     @Override
     public String getTitle(Player player) {
-        return CC.DARK_GRAY + "Poll: " + poll.getQuestion();
+        return CC.DARK_GRAY + "Poll #" + poll.getId();
     }
     
     @Override
