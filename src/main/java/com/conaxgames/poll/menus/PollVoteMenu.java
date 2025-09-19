@@ -76,14 +76,16 @@ public class PollVoteMenu extends Menu {
         });
         
         int slot = 19;
+        int optionIndex = 1;
         for (String option : poll.getOptions()) {
             if (slot >= 43) break;
             
-            buttons.put(slot, new VoteButton(option));
+            buttons.put(slot, new VoteButton(option, optionIndex));
             slot++;
             if ((slot - 19) % 9 == 7) {
                 slot += 2;
             }
+            optionIndex++;
         }
         
         return buttons;
@@ -92,22 +94,28 @@ public class PollVoteMenu extends Menu {
     private class VoteButton extends Button {
         
         private final String option;
+        private final int optionIndex;
         
-        public VoteButton(String option) {
+        public VoteButton(String option, int optionIndex) {
             this.option = option;
+            this.optionIndex = optionIndex;
         }
         
         @Override
         public String getName(Player player) {
             if (poll.hasVoted(player.getUniqueId()) && poll.getPlayerVote(player.getUniqueId()).equals(option)) {
-                return CC.GREEN + "✓ " + option;
+                return CC.GREEN + "✓ Answer #" + optionIndex;
             }
-            return CC.WHITE + option;
+            return CC.WHITE + "Answer #" + optionIndex;
         }
 
         @Override
         public List<String> getDescription(Player player) {
             List<String> lore = new ArrayList<>();
+            
+            List<String> wrappedOption = FormatUtil.wordWrap(CC.YELLOW + option, 40);
+            lore.addAll(wrappedOption);
+            lore.add("");
             
             int votes = poll.getVotes().getOrDefault(option, 0);
             int total = poll.getTotalVotes();

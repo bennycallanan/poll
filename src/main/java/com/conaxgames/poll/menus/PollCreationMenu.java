@@ -159,16 +159,22 @@ public class PollCreationMenu extends Menu {
             
             final int index = i;
             final String option = options.get(i);
+            final int optionNumber = i + 1;
             
             buttons.put(slot, new Button() {
                 @Override
                 public String getName(Player player) {
-                    return CC.WHITE + option;
+                    return CC.WHITE + "Answer #" + optionNumber;
                 }
 
                 @Override
                 public List<String> getDescription(Player player) {
                     List<String> lore = new ArrayList<>();
+                    
+                    List<String> wrappedOption = FormatUtil.wordWrap(CC.YELLOW + option, 40);
+                    lore.addAll(wrappedOption);
+                    lore.add("");
+                    
                     lore.add(CC.GRAY + "Click to remove this option");
                     return lore;
                 }
