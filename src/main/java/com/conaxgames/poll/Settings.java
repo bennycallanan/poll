@@ -26,17 +26,11 @@ public class Settings {
 
         try {
             settings.syncWithConfig(file, PollPlugin.getInstance().getResource("settings.yml"));
-        } catch (Exception exception) {
-            Bukkit.getLogger().info("Unable to load settings.yml");
+        } catch (Exception e) {
+            Bukkit.getLogger().warning("Unable to sync settings.yml: " + e.getMessage());
         }
 
-        // SQLite database file
         sqliteFile = settings.getString("sqlite_file", "polls.db");
-
-        // Poll settings
-        // No restrictions
-
-        // GUI settings
         useFillerglass = settings.getBoolean("gui.use_fillerglass", true);
         autoUpdate = settings.getBoolean("gui.auto_update", true);
         updateInterval = settings.getInt("gui.update_interval", 20);

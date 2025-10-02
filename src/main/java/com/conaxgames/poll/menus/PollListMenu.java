@@ -1,7 +1,6 @@
 package com.conaxgames.poll.menus;
 
 import com.conaxgames.libraries.menu.Button;
-import com.conaxgames.libraries.menu.Menu;
 import com.conaxgames.libraries.message.FormatUtil;
 import com.conaxgames.libraries.util.CC;
 import com.conaxgames.libraries.xseries.XMaterial;
@@ -17,13 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PollListMenu extends Menu {
-    
-    private final PollPlugin plugin;
+public class PollListMenu extends BasePollMenu {
     
     public PollListMenu(PollPlugin plugin) {
-        this.plugin = plugin;
-        this.setPlaceholder(plugin.getSettings().useFillerglass);
+        super(plugin);
         this.setAutoUpdate(plugin.getSettings().autoUpdate);
     }
     

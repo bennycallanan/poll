@@ -111,11 +111,9 @@ public class PollDataManager {
     }
 
     private void loadVotesForPoll(Poll poll) {
-        try (PreparedStatement stmt = connection.prepareStatement(
-                "SELECT * FROM votes WHERE poll_id = ?")) {
-            stmt.setString(1, poll.getId());
-            
-            try (ResultSet rs = stmt.executeQuery()) {
+        executeQuery("SELECT * FROM votes WHERE poll_id = ?", 
+            stmt -> stmt.setString(1, poll.getId()),
+            rs -> {
                 while (rs.next()) {
                     String playerUuid = rs.getString("player_uuid");
                     String option = rs.getString("option");
@@ -123,78 +121,65 @@ public class PollDataManager {
                     poll.getPlayerVotes().put(UUID.fromString(playerUuid), option);
                     poll.getVotes().put(option, poll.getVotes().getOrDefault(option, 0) + 1);
                 }
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Failed to load votes for poll " + poll.getId() + ": " + e.getMessage());
-        }
+            },
+            "Failed to load votes for poll " + poll.getId()
+        );
     }
 
     public void savePoll(Poll poll) {
-        try (PreparedStatement stmt = connection.prepareStatement(
-                "INSERT INTO polls (id, question, options, created_at, expires_at, created_by, active) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
-            stmt.setInt(1, Integer.parseInt(poll.getId()));
-            stmt.setString(2, poll.getQuestion());
-            stmt.setString(3, String.join("|", poll.getOptions()));
-            stmt.setString(4, poll.getCreatedAt().format(DATE_FORMATTER));
-            stmt.setString(5, poll.getExpiresAt().format(DATE_FORMATTER));
-            stmt.setString(6, poll.getCreatedBy());
-            stmt.setInt(7, poll.isActive() ? 1 : 0);
-            
-            stmt.executeUpdate();
-            activePolls.put(poll.getId(), poll);
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Failed to save poll: " + e.getMessage());
-        }
+        executeUpdate("INSERT INTO polls (id, question, options, created_at, expires_at, created_by, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            stmt -> {
+                stmt.setInt(1, Integer.parseInt(poll.getId()));
+                stmt.setString(2, poll.getQuestion());
+                stmt.setString(3, String.join("|", poll.getOptions()));
+                stmt.setString(4, poll.getCreatedAt().format(DATE_FORMATTER));
+                stmt.setString(5, poll.getExpiresAt().format(DATE_FORMATTER));
+                stmt.setString(6, poll.getCreatedBy());
+                stmt.setInt(7, poll.isActive() ? 1 : 0);
+            },
+            "Failed to save poll"
+        );
+        activePolls.put(poll.getId(), poll);
     }
 
     public void saveVote(String pollId, UUID playerId, String option) {
-        try (PreparedStatement stmt = connection.prepareStatement(
-                "INSERT INTO votes (poll_id, player_uuid, option, voted_at) VALUES (?, ?, ?, ?)")) {
-            stmt.setInt(1, Integer.parseInt(pollId));
-            stmt.setString(2, playerId.toString());
-            stmt.setString(3, option);
-            stmt.setString(4, LocalDateTime.now().format(DATE_FORMATTER));
-            
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Failed to save vote: " + e.getMessage());
-        }
+        executeUpdate("INSERT INTO votes (poll_id, player_uuid, option, voted_at) VALUES (?, ?, ?, ?)",
+            stmt -> {
+                stmt.setInt(1, Integer.parseInt(pollId));
+                stmt.setString(2, playerId.toString());
+                stmt.setString(3, option);
+                stmt.setString(4, LocalDateTime.now().format(DATE_FORMATTER));
+            },
+            "Failed to save vote"
+        );
     }
 
     public void updatePollStatus(String pollId, boolean active) {
-        try (PreparedStatement stmt = connection.prepareStatement(
-                "UPDATE polls SET active = ? WHERE id = ?")) {
-            stmt.setInt(1, active ? 1 : 0);
-            stmt.setInt(2, Integer.parseInt(pollId));
-            
-            stmt.executeUpdate();
-            
-            if (!active) {
-                activePolls.remove(pollId);
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Failed to update poll status: " + e.getMessage());
+        executeUpdate("UPDATE polls SET active = ? WHERE id = ?",
+            stmt -> {
+                stmt.setInt(1, active ? 1 : 0);
+                stmt.setInt(2, Integer.parseInt(pollId));
+            },
+            "Failed to update poll status"
+        );
+        
+        if (!active) {
+            activePolls.remove(pollId);
         }
     }
 
     public void deletePoll(String pollId) {
-        try {
-            try (PreparedStatement stmt = connection.prepareStatement(
-                    "DELETE FROM votes WHERE poll_id = ?")) {
-                stmt.setInt(1, Integer.parseInt(pollId));
-                stmt.executeUpdate();
-            }
-            
-            try (PreparedStatement stmt = connection.prepareStatement(
-                    "DELETE FROM polls WHERE id = ?")) {
-                stmt.setInt(1, Integer.parseInt(pollId));
-                stmt.executeUpdate();
-            }
-            
-            activePolls.remove(pollId);
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Failed to delete poll: " + e.getMessage());
-        }
+        executeUpdate("DELETE FROM votes WHERE poll_id = ?",
+            stmt -> stmt.setInt(1, Integer.parseInt(pollId)),
+            "Failed to delete votes for poll"
+        );
+        
+        executeUpdate("DELETE FROM polls WHERE id = ?",
+            stmt -> stmt.setInt(1, Integer.parseInt(pollId)),
+            "Failed to delete poll"
+        );
+        
+        activePolls.remove(pollId);
     }
 
     public Collection<Poll> getActivePolls() {
@@ -206,20 +191,17 @@ public class PollDataManager {
     }
 
     public void cleanupExpiredPolls() {
-        try (PreparedStatement stmt = connection.prepareStatement(
-                "SELECT id FROM polls WHERE active = 1 AND expires_at <= ?")) {
-            stmt.setString(1, LocalDateTime.now().format(DATE_FORMATTER));
-            
-            try (ResultSet rs = stmt.executeQuery()) {
+        executeQuery("SELECT id FROM polls WHERE active = 1 AND expires_at <= ?",
+            stmt -> stmt.setString(1, LocalDateTime.now().format(DATE_FORMATTER)),
+            rs -> {
                 while (rs.next()) {
                     String pollId = String.valueOf(rs.getInt("id"));
                     plugin.getLogger().info("Cleaning up expired poll " + pollId);
                     updatePollStatus(pollId, false);
                 }
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().severe("Failed to cleanup expired polls: " + e.getMessage());
-        }
+            },
+            "Failed to cleanup expired polls"
+        );
     }
 
     public String getNextPollId() {
@@ -234,5 +216,31 @@ public class PollDataManager {
                 plugin.getLogger().severe("Failed to close database connection: " + e.getMessage());
             }
         }
+    }
+    
+    private void executeQuery(String sql, SQLConsumer<PreparedStatement> parameterSetter, 
+                             SQLConsumer<ResultSet> resultProcessor, String errorMessage) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            parameterSetter.accept(stmt);
+            try (ResultSet rs = stmt.executeQuery()) {
+                resultProcessor.accept(rs);
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().severe(errorMessage + ": " + e.getMessage());
+        }
+    }
+    
+    private void executeUpdate(String sql, SQLConsumer<PreparedStatement> parameterSetter, String errorMessage) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            parameterSetter.accept(stmt);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().severe(errorMessage + ": " + e.getMessage());
+        }
+    }
+    
+    @FunctionalInterface
+    private interface SQLConsumer<T> {
+        void accept(T t) throws SQLException;
     }
 }

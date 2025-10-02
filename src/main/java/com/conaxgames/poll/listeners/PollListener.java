@@ -32,7 +32,7 @@ public class PollListener implements Listener {
             public void run() {
                 plugin.getDataManager().cleanupExpiredPolls();
             }
-        }.runTaskTimer(plugin, 20L * 60 * 5, 20L * 60 * 5); // Every 5 minutes
+        }.runTaskTimer(plugin, 20L * 60 * 5, 20L * 60 * 5);
     }
 
     @EventHandler
@@ -62,28 +62,7 @@ public class PollListener implements Listener {
                 
                 if (cleanOption != null) {
                     event.setCancelled(true);
-                    
-                    UUID playerId = player.getUniqueId();
-                    
-                    if (poll.isExpired()) {
-                        player.sendMessage(CC.RED + "This poll has expired!");
-                        player.closeInventory();
-                        return;
-                    }
-                    
-                    if (poll.hasVoted(playerId)) {
-                        player.sendMessage(CC.RED + "You have already voted on this poll!");
-                        return;
-                    }
-                    
-                    if (poll.vote(playerId, cleanOption)) {
-                        plugin.getDataManager().saveVote(poll.getId(), playerId, cleanOption);
-                        
-                        player.sendMessage(CC.GREEN + "Your vote has been recorded!");
-                        player.closeInventory();
-                    } else {
-                        player.sendMessage(CC.RED + "Failed to record your vote. Please try again.");
-                    }
+                    handleVote(player, poll, cleanOption);
                 }
             }
         }
@@ -125,6 +104,29 @@ public class PollListener implements Listener {
             }.runTask(plugin);
             
             player.sendMessage(CC.GREEN + "Added option: " + message.trim());
+        }
+    }
+
+    private void handleVote(Player player, Poll poll, String option) {
+        UUID playerId = player.getUniqueId();
+        
+        if (poll.isExpired()) {
+            player.sendMessage(CC.RED + "This poll has expired!");
+            player.closeInventory();
+            return;
+        }
+        
+        if (poll.hasVoted(playerId)) {
+            player.sendMessage(CC.RED + "You have already voted on this poll!");
+            return;
+        }
+        
+        if (poll.vote(playerId, option)) {
+            plugin.getDataManager().saveVote(poll.getId(), playerId, option);
+            player.sendMessage(CC.GREEN + "Your vote has been recorded!");
+            player.closeInventory();
+        } else {
+            player.sendMessage(CC.RED + "Failed to record your vote. Please try again.");
         }
     }
 

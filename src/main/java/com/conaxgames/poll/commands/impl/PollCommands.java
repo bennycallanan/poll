@@ -18,7 +18,6 @@ public class PollCommands extends BaseCommand {
 
     public PollCommands(PollPlugin plugin) {
         this.plugin = plugin;
-        plugin.getLibraryPlugin().getPaperCommandManager().registerCommand(this);
     }
 
     @Default

@@ -43,11 +43,9 @@ public class TimeUtil {
     }
 
     public static String formatDateTime(LocalDateTime dateTime) {
-        if (dateTime == null) {
-            return "Unknown";
-        }
-        
-        return dateTime.format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"));
+        return dateTime != null ? 
+            dateTime.format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")) : 
+            "Unknown";
     }
 
     public static String getTimeRemaining(LocalDateTime target) {
