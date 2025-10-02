@@ -42,7 +42,7 @@ public class Poll {
     }
 
     public boolean vote(UUID playerId, String option) {
-        if (!active || !options.contains(option)) {
+        if (!active || isExpired() || !options.contains(option)) {
             return false;
         }
         

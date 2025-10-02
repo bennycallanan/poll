@@ -6,15 +6,12 @@ import com.conaxgames.poll.PollPlugin;
 import com.conaxgames.poll.data.Poll;
 import com.conaxgames.poll.menus.PollCreationMenu;
 import com.conaxgames.poll.menus.PollVoteMenu;
-import com.conaxgames.poll.util.TimeUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -67,6 +64,12 @@ public class PollListener implements Listener {
                     event.setCancelled(true);
                     
                     UUID playerId = player.getUniqueId();
+                    
+                    if (poll.isExpired()) {
+                        player.sendMessage(CC.RED + "This poll has expired!");
+                        player.closeInventory();
+                        return;
+                    }
                     
                     if (poll.hasVoted(playerId)) {
                         player.sendMessage(CC.RED + "You have already voted on this poll!");

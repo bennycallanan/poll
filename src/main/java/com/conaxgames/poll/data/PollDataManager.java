@@ -57,14 +57,20 @@ public class PollDataManager {
 
     private void loadActivePolls() {
         try (PreparedStatement stmt = connection.prepareStatement(
-                "SELECT * FROM polls WHERE active = 1 AND expires_at > ?")) {
-            stmt.setString(1, LocalDateTime.now().format(DATE_FORMATTER));
+                "SELECT * FROM polls WHERE active = 1")) {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 int maxId = 0;
                 while (rs.next()) {
                     Poll poll = loadPollFromResultSet(rs);
-                    activePolls.put(poll.getId(), poll);
+                    
+                    if (poll.isExpired()) {
+                        plugin.getLogger().info("Found expired poll " + poll.getId() + " with active=1, marking as inactive");
+                        updatePollStatus(poll.getId(), false);
+                    } else {
+                        activePolls.put(poll.getId(), poll);
+                    }
+                    
                     maxId = Math.max(maxId, Integer.parseInt(poll.getId()));
                 }
                 nextPollId = maxId + 1;
@@ -200,16 +206,19 @@ public class PollDataManager {
     }
 
     public void cleanupExpiredPolls() {
-        List<String> expiredPolls = new ArrayList<>();
-        
-        for (Poll poll : activePolls.values()) {
-            if (poll.isExpired()) {
-                expiredPolls.add(poll.getId());
+        try (PreparedStatement stmt = connection.prepareStatement(
+                "SELECT id FROM polls WHERE active = 1 AND expires_at <= ?")) {
+            stmt.setString(1, LocalDateTime.now().format(DATE_FORMATTER));
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String pollId = String.valueOf(rs.getInt("id"));
+                    plugin.getLogger().info("Cleaning up expired poll " + pollId);
+                    updatePollStatus(pollId, false);
+                }
             }
-        }
-        
-        for (String pollId : expiredPolls) {
-            updatePollStatus(pollId, false);
+        } catch (SQLException e) {
+            plugin.getLogger().severe("Failed to cleanup expired polls: " + e.getMessage());
         }
     }
 
